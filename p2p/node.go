@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/parth/projutil"
-	"github.com/parth/projutil/parser"
+	"github.com/parpat/distributed-systems/projutil"
+	"github.com/parpat/distributed-systems/projutil/parser"
 )
 
 //peerMap holds the peer names and address of peers
