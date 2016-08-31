@@ -2,12 +2,14 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
 	"net/http"
+	"os/exec"
 	"time"
 
 	"github.com/parpat/distributed-systems/projutil"
@@ -16,12 +18,12 @@ import (
 
 //peerMap holds the peer names and address of peers
 //registered on etcd
-var peers []parser.Peer
+var peers []Peer
 var hostName, hostIP string
 
 func main() {
 
-	hostName, hostIP = projutil.GetHostInfo()
+	hostName, hostIP = GetHostInfo()
 	req := projutil.PutPeerRequest(hostName, hostIP+":7575")
 	response := projutil.SendClientRequest(req)
 	fmt.Println("ETCD Registration: ", string(response))
@@ -65,7 +67,7 @@ func main() {
 
 func refreshPeers() {
 	for {
-		peers = getPeers()
+		peers = GetPeers()
 		time.Sleep(time.Minute * 2)
 	}
 }
@@ -132,4 +134,22 @@ func clientRoutine(addr string) {
 
 	fmt.Println("conn closed")
 	//fmt.Println(d)
+}
+
+//GetHostInfo returns the ID and IP of the host container
+//using the os command
+func GetHostInfo() (string, string) {
+	hostIP, err := exec.Command("hostname", "-i").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	hostIP = bytes.TrimSuffix(hostIP, []byte("\n"))
+
+	hostName, err := exec.Command("hostname").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	hostName = bytes.TrimSuffix(hostName, []byte("\n"))
+
+	return string(hostName), string(hostIP)
 }

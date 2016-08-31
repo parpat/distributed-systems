@@ -9,6 +9,12 @@ import (
 	"golang.org/x/net/context"
 )
 
+//Peer holds the name and network address of a node
+type Peer struct {
+	Name string
+	Addr string
+}
+
 //ENDPOINT1 to etcd clusters
 const ENDPOINT1 string = "http://localhost:2379"
 
@@ -47,7 +53,9 @@ func SetLeader(name string) {
 }
 
 //GetPeers retrieves the peers list from etcd
-func GetPeers() {
+func GetPeers() []Peer {
+	var peers []Peer
+
 	getopt := &client.GetOptions{Recursive: true, Sort: true, Quorum: true}
 	resp, err := kapi.Get(context.Background(), "/peers", getopt)
 	if err != nil {
@@ -59,13 +67,12 @@ func GetPeers() {
 		if (resp.Node).Nodes != nil {
 			for _, node := range resp.Node.Nodes {
 				peerName := strings.TrimPrefix(node.Key, "/peers/")
-
+				peers = append(peers, Peer{Name: peerName, Addr: node.Value})
 				log.Printf("Key: %q  Value: %q", peerName, node.Value)
 			}
 
 		}
 	}
 
-	return
-
+	return peers
 }
