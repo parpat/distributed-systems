@@ -4,16 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
-	"net/http"
 	"os/exec"
 	"time"
 
 	"github.com/parpat/distributed-systems/projutil"
-	"github.com/parpat/distributed-systems/projutil/parser"
 )
 
 //peerMap holds the peer names and address of peers
@@ -70,20 +67,6 @@ func refreshPeers() {
 		peers = GetPeers()
 		time.Sleep(time.Minute * 2)
 	}
-}
-
-func getPeers() []parser.Peer {
-	res, err := http.Get(projutil.ETCDAddr + "/peers/?recursive=true")
-	if err != nil {
-		log.Fatal("HTTP Get Peers: ", err)
-	}
-	resBody, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-	peers := parser.PeerList(resBody)
-	return peers
 }
 
 func serveConn(c net.Conn) {
