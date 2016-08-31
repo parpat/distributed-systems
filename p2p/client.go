@@ -9,12 +9,6 @@ import (
 	"golang.org/x/net/context"
 )
 
-//Peer holds the name and network address of a node
-type Peer struct {
-	Name string
-	Addr string
-}
-
 //ENDPOINT1 to etcd clusters
 const ENDPOINT1 string = "http://localhost:2379"
 
@@ -41,15 +35,25 @@ func init() {
 //SetLeader sets the leader key value
 func SetLeader(name string) {
 	setopts := &client.SetOptions{TTL: TTL}
-
-	//set key Value
-	resp, err := kapi.Set(context.Background(), "/leader"+name, "wannabe", setopts)
+	resp, err := kapi.Set(context.Background(), "/leader", name, setopts)
 	if err != nil {
 		log.Fatal(err)
 	} else {
 		// print common key info
-		log.Printf("Set is done. Metadata is %q\n", resp)
+		log.Printf("SetLeader done. Metadata is %q\n", resp)
 	}
+}
+
+//SetPeerInfo sets this peer's current host(container)name and IP address
+func SetPeerInfo(name, addr string) {
+	resp, err := kapi.Set(context.Background(), "/peers/"+name, addr, nil)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		// print common key info
+		log.Printf("SetPeerInfo done. Metadata is %q\n", resp)
+	}
+
 }
 
 //GetPeers retrieves the peers list from etcd

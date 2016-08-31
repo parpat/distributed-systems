@@ -9,11 +9,18 @@ import (
 	"net"
 	"os/exec"
 	"time"
-
-	"github.com/parpat/distributed-systems/projutil"
 )
 
-//peerMap holds the peer names and address of peers
+//PORT is where the server listens
+const PORT string = ":7575"
+
+//Peer holds the name and network address of a node
+type Peer struct {
+	Name string
+	Addr string
+}
+
+//peers holds the peer names and address of peers
 //registered on etcd
 var peers []Peer
 var hostName, hostIP string
@@ -21,9 +28,8 @@ var hostName, hostIP string
 func main() {
 
 	hostName, hostIP = GetHostInfo()
-	req := projutil.PutPeerRequest(hostName, hostIP+":7575")
-	response := projutil.SendClientRequest(req)
-	fmt.Println("ETCD Registration: ", string(response))
+	//Register to ETCD
+	SetPeerInfo(hostName, hostIP+PORT)
 
 	go refreshPeers()
 
