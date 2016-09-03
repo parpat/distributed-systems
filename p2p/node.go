@@ -41,8 +41,10 @@ func main() {
 			if len(peers) > 0 {
 				addr := peers[rand.Intn(len(peers))].Addr
 
-				go clientRoutine(addr)
-				fmt.Println("Started go routine for :", addr)
+				if addr != (hostIP + PORT) {
+					go clientRoutine(addr)
+					fmt.Println("Started go routine for :", addr)
+				}
 			}
 		}
 	}()

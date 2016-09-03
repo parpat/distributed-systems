@@ -7,7 +7,7 @@ RUN mkdir /app
 ADD . /app/
 WORKDIR /app
 #RUN go build -o main .
-CMD ["/app/P2P"]
+CMD ["/app/p2p"]
 
 #Service listens on port 7575.
 EXPOSE 7575
