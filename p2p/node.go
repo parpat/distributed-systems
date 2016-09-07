@@ -23,15 +23,20 @@ type Peer struct {
 //peers holds the peer names and address of peers
 //registered on etcd
 var peers []Peer
-var hostName, hostIP string
+
+//HostName is container ID
+var HostName string
+
+//HostIP is container IP
+var HostIP string
 
 func init() {
-	hostName, hostIP = GetHostInfo()
+	HostName, HostIP = GetHostInfo()
 }
 
 func main() {
 	//Register to ETCD
-	SetPeerInfo(hostName, hostIP+PORT)
+	SetPeerInfo(HostName, HostIP+PORT)
 
 	go refreshPeers()
 
@@ -43,7 +48,7 @@ func main() {
 			if len(peers) > 0 {
 				addr := peers[rand.Intn(len(peers))].Addr
 
-				if addr != (hostIP + PORT) {
+				if addr != (HostIP + PORT) {
 					go clientRoutine(addr)
 					fmt.Println("Started go routine for :", addr)
 				}
@@ -109,7 +114,7 @@ func clientRoutine(addr string) {
 		log.Println(err)
 	}
 
-	_, err = fmt.Fprint(conn, "Sending data from: "+hostIP+" !!..\n")
+	_, err = fmt.Fprint(conn, "Sending data from: "+HostIP+" !!..\n")
 	if err != nil {
 		log.Println(err)
 	}
@@ -132,17 +137,17 @@ func clientRoutine(addr string) {
 //GetHostInfo returns the ID and IP of the host container
 //using the os command
 func GetHostInfo() (string, string) {
-	hostIP, err := exec.Command("hostname", "-i").Output()
+	HostIP, err := exec.Command("hostName", "-i").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	hostIP = bytes.TrimSuffix(hostIP, []byte("\n"))
+	HostIP = bytes.TrimSuffix(HostIP, []byte("\n"))
 
-	hostName, err := exec.Command("hostname").Output()
+	HostName, err := exec.Command("hostname").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	hostName = bytes.TrimSuffix(hostName, []byte("\n"))
+	HostName = bytes.TrimSuffix(HostName, []byte("\n"))
 
-	return string(hostName), string(hostIP)
+	return string(HostName), string(HostIP)
 }
