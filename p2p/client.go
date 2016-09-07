@@ -10,7 +10,7 @@ import (
 )
 
 //ENDPOINT1 to etcd clusters
-const ENDPOINT1 string = "http://localhost:2379"
+const ENDPOINT1 string = "http://172.17.0.1:2379"
 
 //TTL for key
 const TTL time.Duration = (time.Second) * 45
@@ -34,7 +34,8 @@ func init() {
 
 //SetLeader sets the leader key value
 func SetLeader(name string) {
-	setopts := &client.SetOptions{TTL: TTL}
+	setopts := &client.SetOptions{PrevExist: "false", TTL: TTL}
+	log.Println("Attempting to conquer!")
 	resp, err := kapi.Set(context.Background(), "/leader", name, setopts)
 	if err != nil {
 		log.Fatal(err)
