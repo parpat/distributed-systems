@@ -25,9 +25,11 @@ type Peer struct {
 var peers []Peer
 var hostName, hostIP string
 
-func main() {
-
+func init() {
 	hostName, hostIP = GetHostInfo()
+}
+
+func main() {
 	//Register to ETCD
 	SetPeerInfo(hostName, hostIP+PORT)
 
@@ -50,7 +52,7 @@ func main() {
 	}()
 
 	//Initialize Server
-	l, err := net.Listen("tcp", ":7575")
+	l, err := net.Listen("tcp", PORT)
 	fmt.Println("Listening")
 	if err != nil {
 		log.Fatal(err)
