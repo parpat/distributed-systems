@@ -18,6 +18,9 @@ const TTL time.Duration = (time.Second) * 45
 //API to interact with etcd
 var kapi client.KeysAPI
 
+//Leader of the cluster
+var Leader string
+
 func init() {
 	cfg := client.Config{
 		Endpoints: []string{ENDPOINT1},
@@ -48,6 +51,15 @@ func SetLeader() {
 
 //LeaderWatcher watches the /leader key for changes by blocking
 func LeaderWatcher() {
+	//initial check
+	resp, err := kapi.Get(context.Background(), "/leader", nil)
+	if err != nil {
+		clierr := err.(client.Error)
+		log.Println(clierr.Code)
+		SetLeader()
+	}
+	Leader = resp.Node.Value
+	//keep watching for changes
 	watcher := kapi.Watcher("/leader", nil)
 	for {
 		resp, err := watcher.Next(context.Background())
