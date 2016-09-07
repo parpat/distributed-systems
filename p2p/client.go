@@ -33,15 +33,33 @@ func init() {
 }
 
 //SetLeader sets the leader key value
-func SetLeader(name string) {
+func SetLeader() {
 	setopts := &client.SetOptions{PrevExist: "false", TTL: TTL}
 	log.Println("Attempting to conquer!")
-	resp, err := kapi.Set(context.Background(), "/leader", name, setopts)
+	_, err := kapi.Set(context.Background(), "/leader", HostName, setopts)
 	if err != nil {
-		log.Fatal(err)
+		clierr := err.(client.Error)
+		log.Printf("Conquer failed: %s\n", clierr.Message)
 	} else {
-		// print common key info
-		log.Printf("SetLeader done. Metadata is %q\n", resp)
+		log.Println("Conquer succeeded!")
+		//go refreshLeader()
+	}
+}
+
+//LeaderWatcher watches the /leader key for changes by blocking
+func LeaderWatcher() {
+	watcher := kapi.Watcher("/leader", nil)
+	for {
+		resp, err := watcher.Next(context.Background())
+		if err != nil {
+			log.Println(err.Error())
+		}
+
+		if resp.Action == "expire" {
+			SetLeader()
+		} else {
+			log.Printf("Current Leader: %s\n", resp.Node.Value)
+		}
 	}
 }
 

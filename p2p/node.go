@@ -137,7 +137,7 @@ func clientRoutine(addr string) {
 //GetHostInfo returns the ID and IP of the host container
 //using the os command
 func GetHostInfo() (string, string) {
-	HostIP, err := exec.Command("hostName", "-i").Output()
+	HostIP, err := exec.Command("hostname", "-i").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
