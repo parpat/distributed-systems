@@ -13,7 +13,10 @@ import (
 const ENDPOINT1 string = "http://172.17.0.1:2379"
 
 //TTL for key
-const TTL time.Duration = (time.Second) * 45
+const TTL time.Duration = (time.Second) * 10
+
+//REFRESHSEC to refresh /leader
+const REFRESHSEC time.Duration = (time.Second) * 5
 
 //API to interact with etcd
 var kapi client.KeysAPI
@@ -45,7 +48,8 @@ func SetLeader() {
 		log.Printf("Conquer failed: %s\n", clierr.Message)
 	} else {
 		log.Println("Conquer succeeded!")
-		//go refreshLeader()
+		Leader = HostName
+		go refreshLeader()
 	}
 }
 
@@ -57,7 +61,6 @@ func LeaderWatcher() {
 		clierr := err.(client.Error)
 		log.Println(clierr.Code)
 		SetLeader()
-		Leader = HostName
 	} else {
 		Leader = resp.Node.Value
 	}
@@ -73,19 +76,32 @@ func LeaderWatcher() {
 		if resp.Action == "expire" {
 			SetLeader()
 		} else {
-			log.Printf("Current Leader: %s\n", resp.Node.Value)
+			Leader = resp.Node.Value
+			log.Printf("Current Leader: %s\n", Leader)
 		}
+	}
+}
+
+func refreshLeader() {
+	setopts := &client.SetOptions{PrevExist: "true", TTL: TTL, Refresh: true}
+	for {
+		//log.Println("Refreshing leader key")
+		_, err := kapi.Set(context.Background(), "/leader", "", setopts)
+		if err != nil {
+			clierr := err.(client.Error)
+			log.Printf("Leader refresh failed: %s\n", clierr.Message)
+		}
+		time.Sleep(REFRESHSEC)
 	}
 }
 
 //SetPeerInfo sets this peer's current host(container)name and IP address
 func SetPeerInfo(name, addr string) {
-	resp, err := kapi.Set(context.Background(), "/peers/"+name, addr, nil)
+	_, err := kapi.Set(context.Background(), "/peers/"+name, addr, nil)
 	if err != nil {
 		log.Fatal(err)
 	} else {
-		// print common key info
-		log.Printf("SetPeerInfo done. Metadata is %q\n", resp)
+		log.Println("PeerInfo  registered to ETCD ")
 	}
 
 }
@@ -97,16 +113,14 @@ func GetPeers() []Peer {
 	getopt := &client.GetOptions{Recursive: true, Sort: true, Quorum: true}
 	resp, err := kapi.Get(context.Background(), "/peers", getopt)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Failed to obtain peer: ", err)
 	} else {
-		log.Printf("Response metadata: %q\n", resp)
-		log.Printf("%q's Value: %q\n", resp.Node.Key, resp.Node.Value)
-
+		log.Println("Refreshed peer list")
 		if (resp.Node).Nodes != nil {
 			for _, node := range resp.Node.Nodes {
 				peerName := strings.TrimPrefix(node.Key, "/peers/")
 				peers = append(peers, Peer{Name: peerName, Addr: node.Value})
-				log.Printf("Key: %q  Value: %q", peerName, node.Value)
+				log.Printf("Key: %q  Value: %q\n", peerName, node.Value)
 			}
 
 		}

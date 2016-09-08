@@ -120,7 +120,6 @@ func clientRoutine(addr string) {
 	if err != nil {
 		log.Println(err)
 	}
-	//fmt.Printf("bytes sent %d", n)
 
 	//Receiving data
 	for {
@@ -129,11 +128,10 @@ func clientRoutine(addr string) {
 			log.Println(err)
 			break
 		}
-		fmt.Println(resp)
+		fmt.Print(resp)
 	}
 
 	fmt.Println("conn closed")
-	//fmt.Println(d)
 }
 
 //GetHostInfo returns the ID and IP of the host container
