@@ -38,6 +38,8 @@ func main() {
 	//Register to ETCD
 	SetPeerInfo(HostName, HostIP+PORT)
 
+	go LeaderWatcher()
+
 	go refreshPeers()
 
 	//This routine will randomly select a peer to contact every 25 seconds

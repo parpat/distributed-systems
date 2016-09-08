@@ -57,8 +57,11 @@ func LeaderWatcher() {
 		clierr := err.(client.Error)
 		log.Println(clierr.Code)
 		SetLeader()
+		Leader = HostName
+	} else {
+		Leader = resp.Node.Value
 	}
-	Leader = resp.Node.Value
+
 	//keep watching for changes
 	watcher := kapi.Watcher("/leader", nil)
 	for {
