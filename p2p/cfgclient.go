@@ -13,10 +13,10 @@ import (
 const ENDPOINT1 string = "http://172.17.0.1:2379"
 
 //TTL for key
-const TTL time.Duration = (time.Second) * 10
+const TTL time.Duration = (time.Second) * 7
 
 //REFRESHSEC to refresh /leader
-const REFRESHSEC time.Duration = (time.Second) * 5
+const REFRESHSEC time.Duration = (time.Second) * 3
 
 //API to interact with etcd
 var kapi client.KeysAPI
@@ -85,7 +85,7 @@ func LeaderWatcher() {
 func refreshLeader() {
 	setopts := &client.SetOptions{PrevExist: "true", TTL: TTL, Refresh: true}
 	for {
-		//log.Println("Refreshing leader key")
+		log.Println("Refreshing leader key")
 		_, err := kapi.Set(context.Background(), "/leader", "", setopts)
 		if err != nil {
 			clierr := err.(client.Error)

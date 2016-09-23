@@ -14,6 +14,9 @@ import (
 //PORT is where the server listens
 const PORT string = ":7575"
 
+//REFRESHPEER refreshes peer list
+const REFRESHPEER time.Duration = time.Second * 15
+
 //Peer holds the name and network address of a node
 type Peer struct {
 	Name string
@@ -52,7 +55,7 @@ func main() {
 
 				if addr != (HostIP + PORT) {
 					go clientRoutine(addr)
-					fmt.Println("Started go routine for :", addr)
+					//fmt.Println("Started go routine for :", addr)
 				}
 			}
 		}
@@ -82,7 +85,7 @@ func main() {
 func refreshPeers() {
 	for {
 		peers = GetPeers()
-		time.Sleep(time.Minute * 2)
+		time.Sleep(REFRESHPEER)
 	}
 }
 
@@ -95,12 +98,11 @@ func serveConn(c net.Conn) {
 		log.Print(err)
 		//break
 	}
-	fmt.Println("Receiving data from: ", c.RemoteAddr().String())
-	fmt.Println(resp)
+	fmt.Printf("Received data: %s\n", resp)
 
-	fmt.Fprintf(c, "Destination received data\n")
+	fmt.Fprintf(c, "Hello back from: "+HostIP+" !!..\n")
 
-	time.Sleep(2 * time.Second)
+	//time.Sleep(800 * time.Millisecond)
 
 }
 
@@ -116,7 +118,7 @@ func clientRoutine(addr string) {
 		log.Println(err)
 	}
 
-	_, err = fmt.Fprint(conn, "Sending data from: "+HostIP+" !!..\n")
+	_, err = fmt.Fprint(conn, "Saying hello from: "+HostIP+" !!..\n")
 	if err != nil {
 		log.Println(err)
 	}
